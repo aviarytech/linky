@@ -1,4 +1,4 @@
-# paper-wallet
+# linky
 
 ## Install
 
