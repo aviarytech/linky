@@ -5,7 +5,8 @@ import "normalize.css/normalize.css";
 const linkedInAuth = () => {
   const clientId = "78cty7fz766w1r";
   const responseType = "code";
-  const redirectUri = "https://aviary.live/";
+  const redirectUri =
+    "http://ec2-34-220-169-81.us-west-2.compute.amazonaws.com/code";
   const scope = "w_member_social%20r_liteprofile";
   const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=${responseType}&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
 

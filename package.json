@@ -9,7 +9,8 @@
     "build:dev": "webpack",
     "build:prod": "webpack -p --env production",
     "start": "nodemon server/server.js",
-    "dev": "webpack-dev-server"
+    "dev": "webpack-dev-server",
+    "prod": "pm2 start server/server.js"
   },
   "devDependencies": {
     "webpack-dev-server": "^3.7.2"
@@ -31,6 +32,7 @@
     "node-sass": "^4.12.0",
     "nodemon": "^2.0.2",
     "normalize.css": "^8.0.1",
+    "pm2": "^4.2.3",
     "qrcode": "^1.4.1",
     "raw-loader": "^3.1.0",
     "sass-loader": "^7.1.0",

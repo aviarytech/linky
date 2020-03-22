@@ -72,7 +72,8 @@ app.get("/code", (req, res) => {
 
   const code = req.query.code;
   const grantType = "authorization_code";
-  const redirectUri = "https://aviary.live/";
+  const redirectUri =
+    "http://ec2-34-220-169-81.us-west-2.compute.amazonaws.com/code";
   const clientId = "78cty7fz766w1r";
   const clientSecret = "xmCCF6zDo3SGhY31";
 
