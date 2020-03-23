@@ -7,58 +7,52 @@ const port = process.env.PORT || 3000;
 
 app.use(express.static(publicPath));
 
-const MongoClient = require("mongodb").MongoClient;
-const uri =
-  "mongodb+srv://admin:AviaryTech123@cluster0-asppv.mongodb.net/test?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true });
+const { init, insertItem, getItems } = require("./db");
 
 // this gets called by our client
 app.post("/post", (req, res) => {
   // first get the token from the DB
-  client.connect(err => {
-    client
-      .db("linky")
-      .collection("users")
-      .findOne({}, function(error, dbResponse) {
-        if (error) {
-          console.log("Error occurred while inserting");
-        } else {
-          // now use the token to get the user ID
+  getItems()
+    .then(dbRes => {
+      axios
+        .get(`https://api.linkedin.com/v2/me`, {
+          headers: { Authorization: dbRes[0].token }
+        })
+        .then(idResponse => {
           axios
-            .get(`https://api.linkedin.com/v2/me`, {
-              headers: { Authorization: dbResponse.token }
-            })
-            // now create the post on linkedin
-            .then(idResponse => {
-              axios
-                .post(
-                  `https://api.linkedin.com/v2/ugcPosts`,
-                  { Authorization: dbResponse.token },
-                  {
-                    author: `urn:li:person:${idResponse.id}`,
-                    lifecycleState: "PUBLISHED",
-                    specificContent: {
-                      "com.linkedin.ugc.ShareContent": {
-                        shareCommentary: {
-                          text:
-                            "Hello World! This is my first Share on LinkedIn!"
-                        },
-                        shareMediaCategory: "NONE"
-                      }
+            .post(
+              `https://api.linkedin.com/v2/ugcPosts`,
+              { Authorization: dbResponse.token },
+              {
+                author: `urn:li:person:${idResponse.id}`,
+                lifecycleState: "PUBLISHED",
+                specificContent: {
+                  "com.linkedin.ugc.ShareContent": {
+                    shareCommentary: {
+                      text: "Hello World! This is my first Share on LinkedIn!"
                     },
-                    visibility: {
-                      "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
-                    }
+                    shareMediaCategory: "NONE"
                   }
-                )
-                .then(response => {
-                  console.log(response);
-                });
+                },
+                visibility: {
+                  "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+                }
+              }
+            )
+            .then(response => {
+              console.log(response);
+            })
+            .catch(err => {
+              console.log(err);
             });
-        }
-      });
-    client.close();
-  });
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    })
+    .catch(err => {
+      console.log(err);
+    });
 
   res.sendFile(path.join(publicPath, "index.html"));
 });
@@ -85,22 +79,15 @@ app.get("/code", (req, res) => {
     )
     .then(function(response) {
       const accessToken = response.data.access_token;
-      client.connect(err => {
-        client
-          .db("linky")
-          .collection("users")
-          .insertOne({ code: code, token: accessToken }, function(
-            error,
-            response
-          ) {
-            if (error) {
-              console.log("Error occurred while inserting");
-            } else {
-              console.log("inserted record", response.ops[0]);
-            }
-          });
-        client.close();
-      });
+
+      insertItem({ code: code, token: accessToken })
+        .then(dbRes => {
+          console.log(dbRes);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
       res.sendFile(path.join(publicPath, "index.html"));
     })
     .catch(function(error) {
@@ -109,6 +96,8 @@ app.get("/code", (req, res) => {
     });
 });
 
-app.listen(port, () => {
-  console.log("Server is running on port", port);
+init().then(() => {
+  app.listen(port, () => {
+    console.log("Server is running on port", port);
+  });
 });
