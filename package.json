@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build:dev": "webpack",
-    "build:prod": "webpack -p --env production",
+    "build:prod": "npx webpack --config ./server/webpack.config.js --mode production",
     "start": "nodemon server/server.js",
     "dev": "webpack-dev-server",
     "prod": "pm2 start server/server.js"
