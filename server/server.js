@@ -89,7 +89,10 @@ app.get("/code", (req, res) => {
         client
           .db("linky")
           .collection("users")
-          .insertOne({ token: accessToken }, function(error, response) {
+          .insertOne({ code: code, token: accessToken }, function(
+            error,
+            response
+          ) {
             if (error) {
               console.log("Error occurred while inserting");
             } else {
