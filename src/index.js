@@ -19,8 +19,11 @@ const submitPost = () => {
 
   fetch("/post", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: { body: body }
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ body: body })
   })
     .then(response => console.log(response))
     .catch(error => {

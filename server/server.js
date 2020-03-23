@@ -6,6 +6,7 @@ const publicPath = path.join(__dirname, "..", "public");
 const port = process.env.PORT || 3000;
 
 app.use(express.static(publicPath));
+app.use(express.json());
 
 const { init, insertItem, getItems } = require("./db");
 
@@ -28,7 +29,7 @@ app.post("/post", (req, res) => {
                 specificContent: {
                   "com.linkedin.ugc.ShareContent": {
                     shareCommentary: {
-                      text: "Hello World! This is my first Share on LinkedIn!"
+                      text: `${req.body.body}`
                     },
                     shareMediaCategory: "NONE"
                   }
