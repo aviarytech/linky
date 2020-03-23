@@ -8,14 +8,13 @@ const port = process.env.PORT || 3000;
 app.use(express.static(publicPath));
 
 const MongoClient = require("mongodb").MongoClient;
-const uri =
+const dbUri =
   "mongodb+srv://admin:AviaryTech123@cluster0-asppv.mongodb.net/test?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true });
 
 // this gets called by our client
 app.post("/post", (req, res) => {
   // first get the token from the DB
-  client.connect(err => {
+  MongoClient.connect(dbUri, { useNewUrlParser: true }, err => {
     client
       .db("linky")
       .collection("users")
@@ -85,7 +84,8 @@ app.get("/code", (req, res) => {
     )
     .then(function(response) {
       const accessToken = response.data.access_token;
-      client.connect(err => {
+      console.log("accessToken", accessToken);
+      MongoClient.connect(dbUri, { useNewUrlParser: true }, err => {
         client
           .db("linky")
           .collection("users")
