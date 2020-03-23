@@ -15,16 +15,15 @@ app.post("/post", (req, res) => {
   getItems()
     .then(dbRes => {
       axios
-        .get(`https://api.linkedin.com/v2/me`, {
-          headers: { Authorization: dbRes[0].token }
-        })
+        .get(
+          `https://api.linkedin.com/v2/me?oauth2_access_token=${dbRes.token}`
+        )
         .then(idResponse => {
           axios
             .post(
-              `https://api.linkedin.com/v2/ugcPosts`,
-              { Authorization: dbResponse.token },
+              `https://api.linkedin.com/v2/ugcPosts?oauth2_access_token=${dbRes.token}`,
               {
-                author: `urn:li:person:${idResponse.id}`,
+                author: `urn:li:person:${idResponse.data.id}`,
                 lifecycleState: "PUBLISHED",
                 specificContent: {
                   "com.linkedin.ugc.ShareContent": {
