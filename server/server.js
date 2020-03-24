@@ -42,7 +42,7 @@ const postImage = (body, b64string, userId, token) => {
       b64prefix = b64string.split(";base64,")[0].toLowerCase();
       b64string = b64string.split(";base64,")[1];
       const fileType = b64prefix.includes("png") ? "png" : "jpg";
-      const fileName = "image" + fileType;
+      const fileName = "image" + "." + fileType;
 
       fs.writeFile(`./${fileName}`, b64string, "base64", function(err) {
         console.log(err);
@@ -168,6 +168,7 @@ app.get("/code", (req, res) => {
   const grantType = "authorization_code";
   const redirectUri =
     "http://ec2-34-220-169-81.us-west-2.compute.amazonaws.com/code";
+  // const redirectUri = "http://localhost:3000/code";
   const clientId = "78cty7fz766w1r";
   const clientSecret = "xmCCF6zDo3SGhY31";
 
