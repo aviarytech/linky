@@ -79,7 +79,7 @@ const createImagePost = (body, b64string, userId, token) => {
                 }
               }
             )
-            .then(res => {})
+            .then()
             .catch(err => {
               console.log("post creation error: ", err);
             });
@@ -108,7 +108,7 @@ const createTextPost = (body, userId, token) => {
         "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
       }
     })
-    .then(res => {})
+    .then()
     .catch(err => {
       console.log(err);
     });

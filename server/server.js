@@ -31,19 +31,17 @@ app.get("/code", (req, res) => {
   axios
     .post(
       `https://www.linkedin.com/oauth/v2/accessToken/?grant_type=${grantType}&code=${code}&redirect_uri=${redirectUri}&client_id=${clientId}&client_secret=${clientSecret}`,
-      {},
-      { "Content-Type": "x-www-form-urlencoded" }
+      { headers: { "Content-Type": "x-www-form-urlencoded" } }
     )
     .then(apiRes => {
       // write access token to db
-      const accessToken = apiRes.data.access_token;
-      insertItem({ code: code, token: accessToken })
-        .then(dbRes => {})
+      insertItem({ code: code, token: apiRes.data.access_token })
+        .then()
         .catch(err => {
           console.log(err);
         });
     })
-    .catch(function(err) {
+    .catch(err => {
       console.log(err);
     });
 
