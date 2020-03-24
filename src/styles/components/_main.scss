@@ -11,8 +11,14 @@
   }
   .buttons {
     display: flex;
+    margin-bottom: $s-size;
     button {
-      margin: 0 $s-size;
+      margin: 0 $xs-size;
     }
+  }
+  input {
+    margin-bottom: $s-size;
+    border: 1px dotted grey;
+    padding: 5px;
   }
 }

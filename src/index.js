@@ -2,6 +2,14 @@ import "../public/index.html";
 import "./styles/styles.scss";
 import "normalize.css/normalize.css";
 
+const toBase64 = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+
 const linkedInAuth = () => {
   const clientId = "78cty7fz766w1r";
   const responseType = "code";
@@ -13,9 +21,17 @@ const linkedInAuth = () => {
   window.location.replace(url);
 };
 
-const submitPost = () => {
+async function submitPost() {
+  // get and clear text field
   const body = document.getElementById("post-body").value;
   document.getElementById("post-body").value = "";
+
+  // get and convert file
+  const image = document.getElementById("image-upload").files[0];
+  let b64image = undefined;
+  if (image) {
+    b64image = await toBase64(image);
+  }
 
   fetch("/post", {
     method: "POST",
@@ -23,13 +39,13 @@ const submitPost = () => {
       Accept: "application/json",
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ body: body })
+    body: JSON.stringify({ body: body, image: b64image })
   })
     .then(response => console.log(response))
     .catch(error => {
       console.error("Error:", error);
     });
-};
+}
 
 document.getElementById("linkedin-auth").onclick = linkedInAuth;
 document.getElementById("post-submit").onclick = submitPost;
