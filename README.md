@@ -21,3 +21,9 @@ Make new build
 Start express server
 
 `yarn start`
+
+## API ref
+
+[API integration](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/context)
+
+[Image share](https://docs.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/share-on-linkedin#overview)

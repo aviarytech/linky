@@ -7,7 +7,10 @@ const dbName = "linky";
 let db;
 
 const init = () =>
-  MongoClient.connect(connectionUrl, { useNewUrlParser: true }).then(client => {
+  MongoClient.connect(connectionUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  }).then(client => {
     db = client.db(dbName);
   });
 

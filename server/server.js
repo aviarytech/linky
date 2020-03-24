@@ -1,149 +1,72 @@
 const path = require("path");
 const express = require("express");
-const axios = require("axios").default;
-const app = express();
 const bodyParser = require("body-parser");
-var request = require("request");
-const fs = require("fs");
+const axios = require("axios").default;
+
 const publicPath = path.join(__dirname, "..", "public");
-const port = process.env.PORT || 3000;
+
+const app = express();
 
 app.use(express.static(publicPath));
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
 
 const { init, insertItem, getItems } = require("./db");
+const { createImagePost, createTextPost } = require("./createPost");
 
-const postImage = (body, b64string, userId, token) => {
-  // register image
+// this is the endpoint linkedin redirects the browser to to pass in the auth code
+app.get("/code", (req, res) => {
+  if (req.query.error) {
+    console.log("error getting auth code: ", req.query.error_description);
+  }
+
+  const code = req.query.code;
+  const grantType = "authorization_code";
+  // const redirectUri = "http://ec2-34-220-169-81.us-west-2.compute.amazonaws.com/code";
+  const redirectUri = "http://localhost:3000/code";
+  const clientId = "78cty7fz766w1r";
+  const clientSecret = "xmCCF6zDo3SGhY31";
+
+  // use the auth code to get an access token
   axios
     .post(
-      `https://api.linkedin.com/v2/assets?action=registerUpload&oauth2_access_token=${token}`,
-      {
-        registerUploadRequest: {
-          recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
-          owner: `urn:li:person:${userId}`,
-          serviceRelationships: [
-            {
-              relationshipType: "OWNER",
-              identifier: "urn:li:userGeneratedContent"
-            }
-          ]
-        }
-      }
+      `https://www.linkedin.com/oauth/v2/accessToken/?grant_type=${grantType}&code=${code}&redirect_uri=${redirectUri}&client_id=${clientId}&client_secret=${clientSecret}`,
+      {},
+      { "Content-Type": "x-www-form-urlencoded" }
     )
-    .then(res => {
-      const uploadUrl =
-        res.data.value.uploadMechanism[
-          "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"
-        ].uploadUrl + `&oauth2_access_token=${token}`;
-      const asset = res.data.value.asset;
-
-      b64prefix = b64string.split(";base64,")[0].toLowerCase();
-      b64string = b64string.split(";base64,")[1];
-      const fileType = b64prefix.includes("png") ? "png" : "jpg";
-      const fileName = "image" + "." + fileType;
-
-      fs.writeFile(`./${fileName}`, b64string, "base64", function(err) {
-        console.log(err);
-      });
-
-      var contentType = "application/octet-stream";
-      var transferEncoding = "chunked";
-      var options = {
-        method: "post",
-        headers: {
-          "content-type": contentType,
-          "transfer-encoding": transferEncoding
-        }
-      };
-      fs.createReadStream(`./${fileName}`).pipe(
-        request(uploadUrl, options, function(err, httpsResponse, streamBody) {
-          axios
-            .post(
-              `https://api.linkedin.com/v2/ugcPosts?oauth2_access_token=${token}`,
-              {
-                author: `urn:li:person:${userId}`,
-                lifecycleState: "PUBLISHED",
-                specificContent: {
-                  "com.linkedin.ugc.ShareContent": {
-                    shareCommentary: {
-                      text: `${body}` // this is the text for the post body
-                    },
-                    shareMediaCategory: "IMAGE",
-                    media: [
-                      {
-                        status: "READY",
-                        description: {
-                          text: "" // this is the image alt text
-                        },
-                        media: `${asset}`,
-                        title: {
-                          text: "" // not sure what this is
-                        }
-                      }
-                    ]
-                  }
-                },
-                visibility: {
-                  "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
-                }
-              }
-            )
-            .then(response => {
-              console.log(response);
-            })
-            .catch(err => {
-              console.log(err);
-            });
-        })
-      );
+    .then(apiRes => {
+      // write access token to db
+      const accessToken = apiRes.data.access_token;
+      insertItem({ code: code, token: accessToken })
+        .then(dbRes => {})
+        .catch(err => {
+          console.log(err);
+        });
     })
-    .catch(err => {
+    .catch(function(err) {
       console.log(err);
     });
-};
 
-const postText = (body, userId, token) => {
-  axios
-    .post(`https://api.linkedin.com/v2/ugcPosts?oauth2_access_token=${token}`, {
-      author: `urn:li:person:${userId}`,
-      lifecycleState: "PUBLISHED",
-      specificContent: {
-        "com.linkedin.ugc.ShareContent": {
-          shareCommentary: {
-            text: `${body}`
-          },
-          shareMediaCategory: "NONE"
-        }
-      },
-      visibility: {
-        "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
-      }
-    })
-    .then(response => {
-      console.log(response);
-    })
-    .catch(err => {
-      console.log(err);
-    });
-};
+  res.sendFile(path.join(publicPath, "index.html"));
+});
 
 app.post("/post", (req, res) => {
   const b64image = req.body.image;
   const body = req.body.body;
 
+  // pull access token from DB
   getItems()
-    .then(res => {
-      const token = res.token;
+    .then(dbRes => {
+      const token = dbRes.token;
+      // send request to linkedin to create post
       axios
         .get(`https://api.linkedin.com/v2/me?oauth2_access_token=${token}`)
-        .then(res => {
-          const userId = res.data.id;
+        .then(apiRes => {
+          const userId = apiRes.data.id;
           if (b64image) {
-            postImage(body, b64image, userId, token);
+            createImagePost(body, b64image, userId, token);
           } else {
-            postText(body, userId, token);
+            createTextPost(body, userId, token);
           }
         })
         .catch(err => {
@@ -153,52 +76,11 @@ app.post("/post", (req, res) => {
     .catch(err => {
       console.log("error getting token from db: ", err);
     });
-
-  res.sendFile(path.join(publicPath, "index.html"));
 });
 
-// this gets called by the linkedin callback
-app.get("/code", (req, res) => {
-  if (req.query.error) {
-    console.log(req.query.error_description);
-    res.sendFile(path.join(publicPath, "index.html"));
-  }
-
-  const code = req.query.code;
-  const grantType = "authorization_code";
-  const redirectUri =
-    "http://ec2-34-220-169-81.us-west-2.compute.amazonaws.com/code";
-  // const redirectUri = "http://localhost:3000/code";
-  const clientId = "78cty7fz766w1r";
-  const clientSecret = "xmCCF6zDo3SGhY31";
-
-  axios
-    .post(
-      `https://www.linkedin.com/oauth/v2/accessToken/?grant_type=${grantType}&code=${code}&redirect_uri=${redirectUri}&client_id=${clientId}&client_secret=${clientSecret}`,
-      {},
-      { "Content-Type": "x-www-form-urlencoded" }
-    )
-    .then(function(response) {
-      const accessToken = response.data.access_token;
-
-      insertItem({ code: code, token: accessToken })
-        .then(dbRes => {
-          console.log(dbRes.ops[0]);
-        })
-        .catch(err => {
-          console.log(err);
-        });
-
-      res.sendFile(path.join(publicPath, "index.html"));
-    })
-    .catch(function(error) {
-      console.log(error);
-      res.sendFile(path.join(publicPath, "index.html"));
-    });
-});
-
+// init db then start server
 init().then(() => {
-  app.listen(port, () => {
+  app.listen(3000, () => {
     console.log("Server is running on port", port);
   });
 });
