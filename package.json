@@ -13,7 +13,8 @@
     "prod": "pm2 start server/server.js"
   },
   "devDependencies": {
-    "webpack-dev-server": "^3.7.2"
+    "webpack-dev-server": "^3.7.2",
+    "nodemon": "^2.0.2"
   },
   "dependencies": {
     "@babel/core": "^7.5.5",
@@ -29,7 +30,6 @@
     "form-data": "^3.0.0",
     "mongodb": "^3.5.5",
     "node-sass": "^4.12.0",
-    "nodemon": "^2.0.2",
     "normalize.css": "^8.0.1",
     "pm2": "^4.2.3",
     "qrcode": "^1.4.1",
