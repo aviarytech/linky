@@ -1,0 +1,42 @@
+{
+  "name": "linky",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:aviarytech/linky.git",
+  "author": "Jordan McKinney <jordanmmck@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build:dev": "webpack",
+    "build:prod": "npx webpack --config ./server/webpack.config.js --mode production",
+    "start": "nodemon server/server.js",
+    "dev": "webpack-dev-server",
+    "prod": "pm2 start server/server.js"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "^3.7.2",
+    "nodemon": "^2.0.2",
+    "pm2": "^4.2.3"
+  },
+  "dependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/register": "^7.5.5",
+    "axios": "^0.19.2",
+    "babel-loader": "^8.0.6",
+    "babel-polyfill": "^6.26.0",
+    "css-loader": "^3.1.0",
+    "ethers": "^4.0.33",
+    "express": "^4.17.1",
+    "extract-text-webpack-plugin": "4.0.0-alpha.0",
+    "form-data": "^3.0.0",
+    "mongodb": "^3.5.5",
+    "node-sass": "^4.12.0",
+    "normalize.css": "^8.0.1",
+    "qrcode": "^1.4.1",
+    "raw-loader": "^3.1.0",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.37.0",
+    "webpack-cli": "^3.3.6"
+  }
+}
