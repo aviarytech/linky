@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -19,9 +18,10 @@ jobs:
       - run: |
           npm install
           npm run build
+        env:
+          CI: true
       - uses: actions/upload-artifact@master
         with:
           name: webpack artifacts
           path: public/
-        env:
-          CI: true
+        
