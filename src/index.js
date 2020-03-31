@@ -13,10 +13,10 @@ const toBase64 = file =>
 const linkedInAuth = () => {
   const clientId = "78cty7fz766w1r";
   const responseType = "code";
-  // const redirectUri =
-  //   "http://ec2-34-220-169-81.us-west-2.compute.amazonaws.com/code";
-  const redirectUri = "http://localhost:3000/code";
-  const scope = "w_member_social%20r_basicprofile";
+  const redirectUri =
+    "http://ec2-34-220-169-81.us-west-2.compute.amazonaws.com/code";
+  // const redirectUri = "http://localhost:3000/code";
+  const scope = "w_member_social%20r_liteprofile";
   const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=${responseType}&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
 
   window.location.replace(url);
