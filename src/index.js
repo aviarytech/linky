@@ -1,6 +1,8 @@
 import "../public/index.html";
 import "./styles/styles.scss";
 import "normalize.css/normalize.css";
+var uuid = require("uuid");
+import Cookies from "js-cookie";
 
 const toBase64 = file =>
   new Promise((resolve, reject) => {
@@ -18,6 +20,11 @@ const linkedInAuth = () => {
   // const redirectUri = "http://localhost:3000/code";
   const scope = "w_member_social%20r_liteprofile";
   const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=${responseType}&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+
+  // set cookie if not set already
+  if (!Cookies.get("userid")) {
+    Cookies.set("userid", uuid.v4());
+  }
 
   window.location.replace(url);
 };
@@ -38,7 +45,7 @@ async function submitPost() {
       Accept: "application/json",
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ body: body, image: b64image })
+    body: JSON.stringify({ body: body, image: b64image, username: "" })
   })
     .then()
     .catch(error => {

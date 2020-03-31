@@ -2,6 +2,7 @@ const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 const axios = require("axios").default;
+const cookieParser = require("cookie-parser");
 
 const publicPath = path.join(__dirname, "..", "public");
 
@@ -10,8 +11,9 @@ const app = express();
 app.use(express.static(publicPath));
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
+app.use(cookieParser());
 
-const { init, insertItem, getItems } = require("./db");
+const { init, insertItem, getItem } = require("./db");
 const { createImagePost, createTextPost } = require("./createPost");
 
 // this is the endpoint linkedin redirects the browser to to pass in the auth code
@@ -20,6 +22,7 @@ app.get("/code", (req, res) => {
     console.log("error getting auth code: ", req.query.error_description);
   }
 
+  const userid = req.cookies["userid"];
   const code = req.query.code;
   const grantType = "authorization_code";
   const redirectUri =
@@ -36,7 +39,7 @@ app.get("/code", (req, res) => {
     )
     .then(apiRes => {
       // write access token to db
-      insertItem({ code: code, token: apiRes.data.access_token })
+      insertItem({ userid: userid, token: apiRes.data.access_token })
         .then()
         .catch(err => {
           console.log(err);
@@ -52,9 +55,10 @@ app.get("/code", (req, res) => {
 app.post("/post", (req, res) => {
   const b64image = req.body.image;
   const body = req.body.body;
+  const linkyId = req.cookies["userid"];
 
   // pull access token from DB
-  getItems()
+  getItem(linkyId)
     .then(dbRes => {
       const token = dbRes.token;
       // send request to linkedin to create post

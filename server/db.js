@@ -19,9 +19,9 @@ const insertItem = item => {
   return collection.insertOne(item);
 };
 
-const getItems = () => {
+const getItem = userid => {
   const collection = db.collection("users");
-  return collection.findOne({});
+  return collection.findOne({ userid: userid });
 };
 
-module.exports = { init, insertItem, getItems };
+module.exports = { init, insertItem, getItem };
